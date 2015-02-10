@@ -1,0 +1,6 @@
+## Interface: 60000
+## Title:|cff69ccf0Hibcom|r
+## Notes:Has it been completed?
+## Author: Makazeu
+## Version: 1.0
+Hibcom.lua

@@ -1,0 +1,7 @@
+## Interface: 60000
+## Title:Spellyeller
+## Notes:WoW Spell Yeller 
+## Author: Makazeu
+## Version: 2.0.0
+## SavedVariablesPerCharacter: RaidCDList, RaidCDNumber
+Spellyeller.lua
