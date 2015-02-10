@@ -1,7 +1,7 @@
 --[[
 Script: WoW Spell Yeller
 Author : Makazeu
-Version: 2.8.4
+Version: 2.9.1
 makazeu@gmail.com
 Thanks: Blizzard, Gamepedia, Wowprogramming, Wowwiki
 #FuckGFW
@@ -28,7 +28,7 @@ local RaidFunctions = {
 	[11417] = true, [10059] = true, --奧格瑞瑪，暴風城
 	[67826] = true, [157066] = true,  -- 基維斯/修理機器人
 	[126459] = true, [161414] = true, -- 布林頓4000/5000
-	[54710] = true, [156756] = true,  -- 移動郵箱 
+	[54710] = true, [156756] = true,   -- 移動郵箱 
 	--[43987] = true, -- 召喚餐桌
 	--[698] = true, [29893] = true, -- 術士拉人/靈魂之井
 }
@@ -88,7 +88,10 @@ local dinterval =6
 local deathvector = {}
 local PriestDeathSpell = { }
 --開關變量
-local switches = { ["yell"]=1, ["death"]=1, ["alert"]=-1, ["raidcd"]=1, ["falsedmg"]=-1, }
+local switches = { 
+["yell"]=1, ["death"]=1, ["alert"]=-1, ["raidcd"]=1, ["falsedmg"]=-1, 
+["cb"] = -1,
+}
 local addonstatus;
 --
 local starttimestamp;
@@ -98,6 +101,8 @@ local tt;
 local FalseDamage =  { } -- ["Test1"] = 12345678, ["Test2"] = 1234567, 
 local FalseDamageNumber = 9
 local PriestSpell = { }
+---
+local ControlSpell = { [3355] = true, [51514] = true, }
 -------------------------------------------------------
 SLASH_SPELLYELLER1 = '/sy';
 local function handler(msg, editbox)
@@ -105,7 +110,8 @@ local function handler(msg, editbox)
 	local i,v;
 	if (command == "init") then
 		playerGUID = UnitGUID("player");
-		switches = { ["yell"]=1, ["death"]=1, ["alert"]=-1, ["raidcd"]=1, ["falsedmg"]=-1, }
+		switches = { ["yell"]=1, ["death"]=1, ["alert"]=-1, ["raidcd"]=1, ["falsedmg"]=-1, 
+			["cb"] = -1, }
 		InEncounter = 0;  
 		print("|cFFFF7D0AWoW Spell Yeller|r is initialized.");
 	elseif command == "setraidnum" and rest ~= "" then
@@ -188,6 +194,15 @@ frame:SetScript("OnEvent", function(self, event, ...)
 		timestamp, type, hideCaster,sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags = ...
 		channel = IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and "INSTANCE_CHAT" or IsInRaid() and "Raid" or IsInGroup() and "Party"
 		alertchannel = ( UnitIsGroupLeader("player") or UnitIsGroupAssistant("player")) and "RAID_WARNING" or "Raid"
+
+		if (switches["cb"]==1 and type == "SPELL_AURA_BROKEN_SPELL") then
+			spellId, spellName, spellSchool, extraSpellId, extraSpellName, extraSpellSchool = select(12, ...)
+			spellLink = GetSpellLink(spellId)
+			extraSpellLink = GetSpellLink(extraSpellId)
+			if ControlSpell[spellId] or spellName == "变形术" then
+				print("[破控] "..sourceName..extraSpellLink.." => "..spellLink.." from "..destName)
+			end
+		end
 
 		if (type == "SPELL_STOLEN") then --法術竊取
 			spellId, spellName, spellSchool, extraSpellId, extraSpellName, extraSpellSchool = select(12, ...)
