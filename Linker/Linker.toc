@@ -1,0 +1,6 @@
+## Interface: 60000
+## Title:|cff69ccf0Link|rer
+## Notes:Link items or spells
+## Author: Makazeu
+## Version: 1.1
+Linker.lua
