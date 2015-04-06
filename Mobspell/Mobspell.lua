@@ -10,8 +10,27 @@ local mapName, channel, spellchar, tempchar, spellinfo, spellcolor
 local MaxCharacterLength = 250
 local colorcodes = {[1] = "FFFF00", [2] = "FFE680", [4] = "FF8000", 
 [8] = "4DFF4D", [16] = "80FFFF",[32] = "8080FF",[64] = "FF80FF", }
-local EventTypes = {["SPELL_CAST_START"] = true, 
-["SPELL_CAST_SUCCESS"] = true, ["SPELL_AURA_APPLIED"] = true, }
+--local EventTypes = {["SPELL_CAST_START"] = true, 
+--["SPELL_CAST_SUCCESS"] = true, ["SPELL_AURA_APPLIED"] = true, }
+
+local EventTypes = {
+	SPELL_DAMAGE = true,
+	SPELL_MISSED = true,
+	SPELL_HEAL = true,
+	SPELL_ENERGIZE = true,
+	SPELL_DRAIN = true,
+	SPELL_LEECH = true,
+	SPELL_AURA_APPLIED = true,
+	SPELL_CAST_START = true,
+	SPELL_CAST_SUCCESS = true,
+	SPELL_CAST_FAILED = true,
+	SPELL_CREATE = true,
+	SPELL_SUMMON = true,
+	SPELL_INSTAKILL = true,
+	SPELL_PERIODIC_DAMAGE = true,
+	SPELL_PERIODIC_HEAL = true,
+}
+
 local StarterFrame = CreateFrame("Frame")
 StarterFrame:RegisterEvent("ADDON_LOADED")
 StarterFrame:SetScript("OnEvent", function(self, event, arg1)
@@ -53,7 +72,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
 					if sourceName ~= "未知目标" then
 						spelldb[mapName][sourceid].name = sourceName
 					end
-				elseif not SPELL_BLACKLIST[spellid] and not MOB_BLACKLIST[sourceid] then
+				elseif not SPELL_BLACKLIST[spellid] and not MOB_BLACKLIST[sourceid] and not SPELL_BANNED[spellid] then
 					if not spelldb[mapName] then spelldb[mapName] = {} end			
 					if not spelldb[mapName][sourceid] then 
 						spelldb[mapName][sourceid] = { name = sourceName }
@@ -67,7 +86,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
 	end
 end)
 
-local script = GameTooltip:GetScript("OnTooltipSetUnit")
+local script = GameTooltip:GetScript("OnTooltipSetUnit") 
 local function HookedOnTooltipSetUnit( frame, ... )
 	if script and type(script) == "function" then
 		script(frame, ...)
@@ -82,7 +101,11 @@ local function HookedOnTooltipSetUnit( frame, ... )
 			not spelldb[mapName] or not spelldb[mapName][npcid]  then return end
 		spellchar = ""
 		for k,v in pairs(spelldb[mapName][npcid].spell) do
-			spellchar = spellchar.." "..GetSpellColored(GetSpellInfo(k),v)
+			if not GetSpellInfo(k) then
+				print("檢測到無效法術: "..spelldb[mapName][npcid].name.." - "..k)
+			else
+				spellchar = spellchar.." "..GetSpellColored(GetSpellInfo(k),v)
+			end
 		end
 		frame:AddLine("法術:"..spellchar, 1, 1, 1, true)
 	end
@@ -103,9 +126,19 @@ local function handler( msg, editbox )
 				if spelldb[i][j] then
 					for k, kv in  pairs(jv.spell) do
 						if SPELL_BLACKLIST[k] then
-							print(jv.name.." in "..i.." has been removed for "..MySpellLinker(k,kv))
+							print(jv.name.." in "..i.." has been removed for "..MySpellLinker(k,kv)..".")
 							spelldb[i][j] = nil
 							break
+						end
+						if not GetSpellInfo(k) then
+							print(jv.name.." - "..k.." in "..i.." has been removed for not existing.")
+							spelldb[i][j].spell[k] = nil
+						end
+					end
+					for k, kv in  pairs(jv.spell) do
+						if SPELL_BANNED[k] then
+							print(jv.name.." - "..MySpellLinker(k,kv).." in "..i.." has been removed for BlackList.")
+							spelldb[i][j].spell[k] = nil
 						end
 					end
 				end
@@ -119,7 +152,7 @@ local function handler( msg, editbox )
 		for i,iv in pairs(spelldb) do
 			for j,jv in pairs(iv) do
 				for k,kv in pairs(jv.spell) do
-					if strfind(GetSpellInfo(k),rest) then
+					if GetSpellInfo(k) and strfind(GetSpellInfo(k),rest) then
 						print("|cFFFF8000"..jv.name.."|r("..j..")@|cFF8080FF"..i.."|r - "..MySpellLinker(k,kv))
 						resultnum = resultnum +1
 						if resultnum > maxresultnum then 

@@ -1,7 +1,7 @@
 --[[
 Script: WoW Spell Yeller
 Author : Makazeu
-Version: 2.9.1
+Version: 2.9.2
 makazeu@gmail.com
 Thanks: Blizzard, Gamepedia, Wowprogramming, Wowwiki
 #FuckGFW
@@ -28,7 +28,7 @@ local RaidFunctions = {
 	[11417] = true, [10059] = true, --奧格瑞瑪，暴風城
 	[67826] = true, [157066] = true,  -- 基維斯/修理機器人
 	[126459] = true, [161414] = true, -- 布林頓4000/5000
-	[54710] = true, [156756] = true,   -- 移動郵箱 
+	[54710] = true, [156756] = true,  -- 移動郵箱 
 	--[43987] = true, -- 召喚餐桌
 	--[698] = true, [29893] = true, -- 術士拉人/靈魂之井
 }
@@ -42,31 +42,35 @@ local ImportantAbility = {
 	[31821] = true, [31821] = true, -- 虔誠光環 Paladin
 	[98008] = true, -- 靈魂鏈接圖騰 Shaman
 	[62618] = true, [81782] = true, -- 真言術·障 Priest
-	[159916] = true, -- 魔法增效 Mage
-	[97462] = true, [97463] = true, -- 振奮咆哮 Warrior
+	--[159916] = true, -- 魔法增效 Mage
+	--[97462] = true, [97463] = true, -- 振奮咆哮 Warrior
 	--[172106] = true, -- 靈狐守護 Hunter
 	--[106898] = true, -- 奔竄咆哮 Druid
 	--[77764] = true, -- 狂奔怒吼 Druid
 }
 local PersonalAbility = {
-	[102342] = true, -- 鐵樹皮術 
-	[116849] = true, -- 氣繭護體
-	[633] = true, -- 聖療術
-	[6940] = true, -- 犧牲
-	[33206] = true, -- 痛苦鎮壓
-	[47788] = true, -- 守護聖靈
-	[114030] = true, -- 戒備守護
+	--[102342] = true, -- 鐵樹皮術 
+	--[116849] = true, -- 氣繭護體
+	--[633] = true, -- 聖療術
+	--[6940] = true, -- 犧牲
+	--[33206] = true, -- 痛苦鎮壓
+	--[47788] = true, -- 守護聖靈
+	--[114030] = true, -- 戒備守護
+	--[1038] = true, -- 拯救聖禦
+	[1022] = true, -- 保護之手
 	[20484] = true, -- 復生
-	[20707] = true, -- 靈魂石復活
+	[95750] = true, -- 靈魂石復活
 	[61999] = true, -- 盟友復生
 	[126393] = true, -- 永恒守护者
-	[1038] = true, -- 拯救聖禦
+	
 }
 local DeadlyspellStart = {
 }
 local DeadlyspellSucc = {
 }
 local AuraList = {
+	[156743] = "::[擋槍俠]::  死亡標記=>",
+	[175020] = "::[擋槍俠]::  死亡標記=>",
 }
 local SpellSchoolCode = {[1] = "物理", [2] = "神聖", [4] = "火焰", [8] = "自然", [16] = "冰霜", [32] = "暗影", [64] = "奧術",}
 local EnvironmentalType = { ["Falling"] = "墜落", ["Drowning"] = "溺水", ["Fatigue"] = "疲勞", ["Fire"] = "火焰", ["Lava"] = "岩漿", ["Slime"] = "軟泥", }
@@ -87,37 +91,46 @@ local deathcount = 0
 local dinterval =6
 local deathvector = {}
 local PriestDeathSpell = { }
+local deadname
+local deadguid
+local dead
 --開關變量
 local switches = { 
-["yell"]=1, ["death"]=1, ["alert"]=-1, ["raidcd"]=1, ["falsedmg"]=-1, 
-["cb"] = -1,
-}
+["yell"]=1, ["death"]=1, ["alert"]=-1, ["raidcd"]=1, ["falsedmg"]=-1, ["cb"] =-1,["ir"]=-1,}
 local addonstatus;
 --
 local starttimestamp;
 local chatitem = 10;
 local tt;
 ---
-local FalseDamage =  { } -- ["Test1"] = 12345678, ["Test2"] = 1234567, 
+local FalseDamage =  { } 
 local FalseDamageNumber = 9
 local PriestSpell = { }
 ---
-local ControlSpell = { [3355] = true, [51514] = true, }
+local ControlSpell = { [3355] = true, [51514] = true, [6110] = true, }
+---
+local Blackrock = { }
 -------------------------------------------------------
 SLASH_SPELLYELLER1 = '/sy';
+local function NumberFormat(number)
+	if number < 10000 then 
+		return number
+	else
+		return floor(number / 1000) .. "K"
+	end
+end
 local function handler(msg, editbox)
 	local command, rest = msg:match("^(%S*)%s*(.-)$");
 	local i,v;
 	if (command == "init") then
 		playerGUID = UnitGUID("player");
-		switches = { ["yell"]=1, ["death"]=1, ["alert"]=-1, ["raidcd"]=1, ["falsedmg"]=-1, 
-			["cb"] = -1, }
+		switches = { ["yell"]=1, ["death"]=1, ["alert"]=-1, ["raidcd"]=1, ["falsedmg"]=-1, ["cb"] =-1,["ir"]=-1,}
 		InEncounter = 0;  
-		print("|cFFFF7D0AWoW Spell Yeller|r is initialized.");
+		print("|cFFFF7D0AWoW Spell Yeller|r has been initialized.");
 	elseif command == "setraidnum" and rest ~= "" then
 		rest = tonumber(rest)
 		Maxdeathnumber = rest
-	elseif (command == "rch") then
+	elseif command == "rch" then
 		rest = rest and tonumber(rest) or 1;
 		for i = (rest-1)*chatitem+1,rest*chatitem do
 			if(i>RaidCDNumber) then break end
@@ -138,8 +151,8 @@ local function handler(msg, editbox)
 			if rest == "r" then SendChatMessage("上次戰鬥未記錄到隊友誤傷！", "raid") end
 			print("上次戰鬥未記錄到隊友誤傷！") return
 		else
-			print("隊友誤傷通報：")
-			if rest == "r" then SendChatMessage("隊友誤傷通報：", "raid") end
+			print("隊友誤傷通報(不包括自己傷害自己)：")
+			if rest == "r" then SendChatMessage("隊友誤傷通報(不包括自己傷害自己)：", "raid") end
 		end
 
 		local fdmaxnum
@@ -154,8 +167,8 @@ local function handler(msg, editbox)
 				end
 			end
 			fdprinted[fdmaxname] = true
-			print(i..". "..fdmaxname.." - ".. floor(fdmaxnum / 1000) .."K")
-			if rest == "r" then SendChatMessage(i..". "..fdmaxname.." - "..floor(fdmaxnum / 1000) .."K", "raid") end
+			print(i..". "..fdmaxname.." - ".. NumberFormat(fdmaxnum))
+			if rest == "r" then SendChatMessage(i..". "..fdmaxname.." - "..NumberFormat(fdmaxnum), "raid") end
 		end
 	else 
 		if not switches[command] then return end
@@ -166,13 +179,13 @@ local function handler(msg, editbox)
 end
 SlashCmdList["SPELLYELLER"] = handler;
 -------------------------------------------------------
-local function CheckDeath( tdestName, tsourceGUID, tdestGUID )
-	if strsub(tdestGUID,1,2)  ~= "Pl" or not UnitInParty(tdestName) then return false end
-	if strsub(tsourceGUID,1,2) == "Pl" and tsourceGUID ~= tdestGUID then return false end
-	return true
-end
 local function IsPartyMember( thisname, thisguid )
 	return UnitInParty(thisname) and strsub(thisguid,1,2) == "Pl"
+end
+local function CheckDeath( tsourceGUID, tdestGUID, tdestName )
+	if not IsPartyMember( tdestName, tdestGUID ) then return false end
+	--if strsub(tsourceGUID,1,2) == "Pl" and not UnitInParty(tsourceName) then return false end
+	return true
 end
 -------------------------------------------------------
 local frame = CreateFrame("Frame");
@@ -199,8 +212,8 @@ frame:SetScript("OnEvent", function(self, event, ...)
 			spellId, spellName, spellSchool, extraSpellId, extraSpellName, extraSpellSchool = select(12, ...)
 			spellLink = GetSpellLink(spellId)
 			extraSpellLink = GetSpellLink(extraSpellId)
-			if ControlSpell[spellId] or spellName == "变形术" then
-				print("[破控] "..sourceName..extraSpellLink.." => "..spellLink.." from "..destName)
+			if (ControlSpell[spellId] or spellName == GetSpellInfo(118)) and (sourceName and IsPartyMember(sourceName,sourceGUID)) then
+				SendChatMessage("【破控】 "..sourceName..extraSpellLink.." => "..spellLink.."@"..destName, channel)
 			end
 		end
 
@@ -236,12 +249,24 @@ frame:SetScript("OnEvent", function(self, event, ...)
 				SendChatMessage(extraSpellLink.." <= ".. sourceName.."'s "..spellLink, personalchannel)
 			end
 		end
+		if type == "SPELL_INTERRUPT" and switches["ir"] == 1 and IsPartyMember(sourceName,sourceGUID) then
+			spellId, spellName, spellSchool, extraSpellId, extraSpellName, extraSpellSchool = select(12, ...)
+			spellLink = GetSpellLink(spellId)
+			extraSpellLink = GetSpellLink(extraSpellId)
+			SendChatMessage(sourceName..spellLink.." => "..destName..extraSpellLink,channel)
+		end
+		if type == "SPELL_DAMAGE"  or type == "SPELL_PERIODIC_DAMAGE" or type == "RANGE_DAMAGE"  then
+			spellId, spellName, spellSchool, amount,overkill = select(12, ...)
+			if overkill >=0 and sourceGUID == playerGUID and strsub(destGUID,1,2) == "Pl" then
+				print("|cffffd200PvP: 親手擊殺|r |cFFBF00FF>"..destName.."<|r!")
+			end
+		end
 
 		--死亡通報    
 		if(switches["death"] == 1 and ( (InEncounter == 1 and deathcount < Maxdeathnumber) or InEncounter ~= 1)) then
 			if ( type == "SPELL_DAMAGE"  or type == "SPELL_PERIODIC_DAMAGE" or type == "RANGE_DAMAGE")  then
 				spellId, spellName, spellSchool, amount,overkill = select(12, ...)
-				if CheckDeath(destName, sourceGUID, destGUID) then
+				if CheckDeath(sourceGUID, destGUID, destName) then
 					if overkill >= 0 then
 						--print(time().." "..destName.." "..GetSpellLink(spellId))
 						deathvector[destName] = {["type"] = "SPELL"}
@@ -258,21 +283,30 @@ frame:SetScript("OnEvent", function(self, event, ...)
 				end
 			elseif ( type == "SWING_DAMAGE") then
 				amount, overkill = select(12, ...)
-				if overkill >= 0 and CheckDeath(destName, sourceGUID, destGUID) then
-					--print(time().." "..type.." "..destName)
-					deathvector[destName]={["type"] = "SWING"}
-					deathvector[destName]["amount"] = amount
-					deathvector[destName]["source"] = sourceName
-					deathvector[destName]["tstamp"] = time()
+				if CheckDeath(sourceGUID, destGUID, destName) then
+					if overkill >= 0 then
+						deathvector[destName]={["type"] = "SWING"}
+						deathvector[destName]["amount"] = amount
+						deathvector[destName]["source"] = sourceName
+						deathvector[destName]["tstamp"] = time()
+					elseif select(3,UnitClass(destName)) == 5 then
+						PriestDeathSpell[destName] = {["times"] = time()}
+						PriestDeathSpell[destName]["spell"] = 6603
+						PriestDeathSpell[destName]["school"] = 1
+						PriestDeathSpell[destName]["damage"] = amount
+					end
 				end
 			elseif(type == "SPELL_INSTAKILL" ) then
-				if CheckDeath(destName, sourceGUID, destGUID) then
+				if IsPartyMember( destName, destGUID ) then
 					print(destName.." killed by "..sourceName..GetSpellLink(spellId))
 					deathvector[destName]={["type"] = "INSTAKILL"}
 					deathvector[destName]["id"] = spellId
 					deathvector[destName]["tstamp"] = time()
-					if  IsPartyMember(destName,destGUID) and select(3,UnitClass(destName)) == 6 then 
+					if  strsub(sourceGUID,1,2)  == "Pl" and select(3,UnitClass(destName)) == 6 then 
 						deathvector[destName]["id"] = 114556  -- DK 煉獄
+					end
+					if strsub(sourceGUID,1,2)  == "Pl" and select(3,UnitClass(destName)) ~= 6 then
+						deathvector[destName]["id"] = 41220 
 					end
 				end
 			elseif( type == "ENVIRONMENTAL_DAMAGE" ) then
@@ -282,16 +316,16 @@ frame:SetScript("OnEvent", function(self, event, ...)
 				end]]
 				if UnitHealth(destName) <= 1 and IsPartyMember(destName, destGUID) then
 					localizedenvirtype = EnvironmentalType[envirtype] or envirtype
-					SendChatMessage(destName.." died of "..localizedenvirtype.."("..amount.."環境傷害)!",channel)
+					SendChatMessage("死亡: "..destName.." > "..localizedenvirtype.."("..NumberFormat(amount).."環境傷害)!",channel)
 					deathcount = InEncounter == 1 and deathcount + 1
 				end
 			elseif type == "UNIT_DIED" or type == "SPELL_AURA_APPLIED" then
-				local deadname = select(9, ...)
-				local deadguid = select(8, ...)
-				local dead
+				deadname = select(9, ...)
+				deadguid = select(8, ...)
+				dead = nil
 				if type == "UNIT_DIED"and IsPartyMember(deadname, deadguid) then 
 					dead = deathvector[deadname] 
-					--print(time().." "..type.." "..deadname)
+					deathvector[deadname] = nil
 				end
 				if type == "SPELL_AURA_APPLIED" and UnitInParty(deadname) then
 					spellId = select(12, ...)
@@ -303,9 +337,9 @@ frame:SetScript("OnEvent", function(self, event, ...)
 							if tt and time()-tt.times <= dinterval then
 								spellLink = GetSpellLink(tt.spell)
  								spellschoolname = SpellSchoolCode[tt.school] or "其他"
- 								SendChatMessage(deadname.." died of "..spellLink.."("..tt.damage..spellschoolname..")!",channel)
+ 								SendChatMessage("死亡: "..deadname.." > "..spellLink.."("..NumberFormat(tt.damage)..spellschoolname..")!",channel)
 							else 
-								SendChatMessage(deadname.." died, turned into "..GetSpellLink(spellId).."!",channel)
+								SendChatMessage("死亡: "..deadname.." > Unknown!",channel)
 							end 
 							deathcount = InEncounter == 1 and deathcount + 1
 						end
@@ -314,14 +348,14 @@ frame:SetScript("OnEvent", function(self, event, ...)
 				if  dead and time()-dead.tstamp <= dinterval and dead.type == "SPELL" then
 					spellLink = GetSpellLink(dead.id)
  					spellschoolname = SpellSchoolCode[dead.school] or "其他"
-					SendChatMessage(deadname.." died of "..spellLink.."("..dead.amount..spellschoolname..")!",channel)
+ 					SendChatMessage("死亡: "..deadname.." > "..spellLink.."("..NumberFormat(dead.amount)..spellschoolname..")!",channel)
 					deathcount = InEncounter == 1 and deathcount + 1
 				elseif dead and time()-dead.tstamp <= dinterval and dead.type == "SWING" then
-					SendChatMessage(deadname.." died of "..dead.source.."的近戰攻擊:"..dead.amount..")!",channel)
+					SendChatMessage("死亡: "..deadname.." > "..dead.source.."的近戰攻擊("..NumberFormat(dead.amount)..")!",channel)
 					deathcount = InEncounter == 1 and deathcount + 1
 				elseif dead and time()-dead.tstamp <= dinterval and dead.type == "INSTAKILL" then
 					spellLink = GetSpellLink(dead.id)
-					SendChatMessage(deadname.." died of "..spellLink.."(立即死亡)!", channel)
+					SendChatMessage("死亡: "..deadname.." > "..spellLink.."(立即死亡)!", channel)
 					deathcount = InEncounter == 1 and deathcount + 1
 				end
 			end
@@ -334,8 +368,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
 				spellId, spellName, spellSchool = select(12, ...)
 				if ( UnitInParty(destName) and AuraList[spellId] ) then
 					spellLink = GetSpellLink(spellId)
-					SendChatMessage( "[技能警報]: "..spellLink.." => "..destName, alertchannel )
-					SendChatMessage( spellLink.." -> "..destName, "yell" )
+					SendChatMessage( AuraList[spellId]..destName, alertchannel )
 				end
 			end
 			--開始施法
@@ -370,17 +403,18 @@ frame:SetScript("OnEvent", function(self, event, ...)
 		end
 
 		--各種雜項
-		if( UnitInParty(sourceName) and type == "SPELL_CAST_SUCCESS") then
+		if UnitInParty(sourceName) and type == "SPELL_CAST_SUCCESS" then
 			spellId, spellName, spellSchool = select(12, ...)
 			spellLink = GetSpellLink(spellId)
 			if ( RaidFunctions[spellId] ) then
-				SendChatMessage(sourceName.." used "..spellLink..".", channel)
-			elseif ( FeastSpell[spellId] ) then
-				SendChatMessage(sourceName.." placed "..spellLink..".", channel)	
-			elseif (switches["raidcd"] == 1 ) then -- Raid Cooldown
+				SendChatMessage(sourceName.." >> "..spellLink..".", channel)
+			--elseif ( FeastSpell[spellId] ) then
+			--	SendChatMessage(sourceName.."'s placed "..spellLink..".", channel)	
+			elseif  switches["raidcd"] == 1 then -- Raid Cooldown
 				if (ImportantAbility[spellId]) then -- 團隊大技能、減傷
 					local holyp = true
-					if spellName == "神圣赞美诗" then
+					--if spellName == "神圣赞美诗" or spellName == "神聖禮頌" then
+					if spellName == GetSpellInfo(64843) then
 						holyp = (not PriestSpell[sourceName]) or (time()-PriestSpell[sourceName] >20)
 						PriestSpell[sourceName] = time()
 					end
@@ -389,12 +423,13 @@ frame:SetScript("OnEvent", function(self, event, ...)
 							RaidCDNumber = RaidCDNumber + 1
 							RaidCDList[RaidCDNumber] = {id = spellId, times = time() - starttimestamp, source = sourceName }
 						end
-						SendChatMessage(spellLink.." cast by "..sourceName.." !", alertchannel)
+						SendChatMessage(spellLink.." cast by "..sourceName.."!", channel)
 					end
-				--[[單目標減傷
-				if (PersonalAbility[spellId]) then 
-				SendChatMessage(sourceName..spellLink.." => "..destName.." !", channel)]]
 				end
+				--[[單目標技能
+				if (PersonalAbility[spellId]) then 
+					SendChatMessage(sourceName..spellLink.." => "..destName.." !", channel)
+				end]]--
 			end 
 		end
 	end 

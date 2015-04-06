@@ -1,4 +1,4 @@
-﻿local function PandariaWeekly( ... )
+local function PandariaWeekly( ... )
 	print("=======潘达利亚週常=======")
 	local panwk = {
 	Sha = { id=32099,name="怒之煞(昆莱山)"},
@@ -11,6 +11,8 @@
 	for k,v in pairs(panwk) do
 		if IsQuestFlaggedCompleted(v["id"]) == false then
 			print(v["name"].." |cffff0000未完成|r！")
+		else
+			print(v["name"].."|cff00ff00已完成|r！")
 		end	
 	end
 end
@@ -18,12 +20,16 @@ end
 local function DraenorWeekly( ... )
 	print("=======德拉諾週常=======")
 	local draenorweek = {
-	Rukhmar  = { id=37474,name="魯克瑪(阿蘭卡峯)"},
+	Rukhmar  = { id=37464,name="魯克瑪(阿蘭卡峯)"},
 	Tarlna = {id=37462,name="戈爾隆德兩隻首領"},
+	GoldInvasion = { id = 37640, name = "黃金要塞入侵" },
+	PInvasion = { id = 38482, name = "白金要塞入侵" },
 	}
 	for k,v in pairs(draenorweek) do
 		if IsQuestFlaggedCompleted(v["id"]) == false then
 			print(v["name"].." |cffff0000未完成|r！")
+		else
+			 print(v["name"].."|cff00ff00已完成|r！")
 		end	
 	end
 end
@@ -41,7 +47,7 @@ local function Help( ... )
 	print("用法：/hibcom xxx")
 	print("panda: 潘達利亞週常")
 	print("dw:德拉諾週常")
-	print("quest ID: 特定任務狀態")
+	print("q ID: 特定任務狀態")
 end
 
 SLASH_HIBCOM1 = '/hibcom'
@@ -51,7 +57,7 @@ local function handler( msg,editbox )
 		PandariaWeekly()
 	elseif command == "dw" then
 		DraenorWeekly()
-	elseif command == "quest" and rest ~= "" then
+	elseif command == "q" and rest ~= "" then
 		GetQuest(tonumber(rest))
 	else 
 		Help()	

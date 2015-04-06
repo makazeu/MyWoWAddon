@@ -1,8 +1,23 @@
-﻿--WoW In-game Item Linker
+--WoW In-game Item Linker
 --Makazeu@gmail.com
---Verison: 2.1.1
+--Verison: 2.2.0
+
+local RareName = {
+	["现世边界"] = true,
+	["神秘的骆驼雕像"] = true,
+}
+
+local Edge = CreateFrame("frame",nil, UIParent);
+Edge:SetScript("OnUpdate", function() 
+	if RareName[GameTooltipTextLeft1:GetText()]  then 
+		print("|cFFBF00FFRare Found : "..GameTooltipTextLeft1:GetText().."!|r")
+		PlaySoundKitID(11466, "master", true); 
+	end 
+end)
+
+local MaxCharacterLength = 250
 function LinkItem(ItemID) 
-	local iName, iLink, iRarity, iLevel, iMinLevel, iType, iSubType, iStackCount = GetItemInfo(ItemID);
+	local iName, iLink = GetItemInfo(ItemID);
 	if not iLink then
 		print("Item "..ItemID..": 未緩存或不存在！");
 	else
@@ -42,24 +57,26 @@ local function GetArenaEnemySpec()
 end
 
 local function RaidCheck( membernum )
-	if not IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and not IsInRaid() then return end;
-	local RaidMembertoCheck = membernum and membernum or GetNumGroupMembers();
-	local NoFlask = 0;
-	local NoFood = 0;
-	local ResultFlask = "無合劑: ", tempResultFlask; 
-	local ResultFood = "無食物: ", tempResultFood;
-	local MaxCharacterLength = 250;
+	if not IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and not IsInRaid() then 
+		print("你不在一個團隊中!") return 
+	end
+	local RaidMembertoCheck = membernum or GetNumGroupMembers()
+	local NoFlask = 0
+	local NoFood = 0
+	local ResultFlask = "無合劑: ", tempResultFlask
+	local ResultFood = "無食物: ", tempResultFood
 	for i = 1,RaidMembertoCheck do 
 		for j = 1, 41 do 
 			UnitBuffName = UnitBuff("raid"..i,j);
 			if (UnitBuffName) then
-				if( string.find(UnitBuffName, "合剂") or UnitBuffName == "疯狂耳语" ) then
+				if strfind(UnitBuffName, "合剂") or UnitBuffName == "疯狂耳语" or 
+				strfind(UnitBuffName, "精煉藥劑") or UnitBuffName == "瘋狂呢喃" then
 					break;
 				end
 			elseif( j == 41 ) then
 				tempResultFlask = ResultFlask..UnitName("raid"..i)..".";
 				NoFlask = NoFlask +1;
-				if (string.len(tempResultFlask) > MaxCharacterLength)  then
+				if (strlen(tempResultFlask) > MaxCharacterLength)  then
 					SendChatMessage(ResultFlask,"raid");
 					ResultFlask = "無合劑: "..UnitName("raid"..i)..".";
 				else
@@ -70,13 +87,13 @@ local function RaidCheck( membernum )
 		for j = 1, 41 do 
 			UnitBuffName = UnitBuff("raid"..i,j);
 			if (UnitBuffName) then
-				if( UnitBuffName == "进食充分" ) then
+				if UnitBuffName == "进食充分" or UnitBuffName == "充分進食" then
 					break;
 				end
 			elseif( j == 41 ) then
 				tempResultFood = ResultFood..UnitName("raid"..i)..".";
 				NoFood = NoFood +1;
-				if (string.len(tempResultFood) > MaxCharacterLength)  then
+				if (strlen(tempResultFood) > MaxCharacterLength)  then
 					SendChatMessage(ResultFood,"raid");
 					ResultFlask = "無食物: "..UnitName("raid"..i)..".";
 				else
@@ -86,14 +103,41 @@ local function RaidCheck( membernum )
 		end
 	end
 	if (NoFlask == 0) then
-		SendChatMessage("合劑檢查：全員皆有合劑！","raid");
+		SendChatMessage("合劑檢查：全員皆有合劑！","raid")
 	else
-		SendChatMessage(ResultFlask.."("..NoFlask.."人)","raid");
+		SendChatMessage(ResultFlask.."("..NoFlask.."人)","raid")
 	end
 	if (NoFood==0) then
-		SendChatMessage("食物檢查：全員皆有進食！","raid");
+		SendChatMessage("食物檢查：全員皆有進食！","raid")
 	else
-		SendChatMessage(ResultFood.."("..NoFood.."人)","raid");
+		SendChatMessage(ResultFood.."("..NoFood.."人)","raid")
+	end
+end
+
+local function LevelCheck( RaidLevel )
+	if not IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and not IsInRaid() then 
+		print("你不在一個團隊中!") return 
+	end
+	local RaidLeveltoCheck = RaidLevel or 100
+	local nonlevelnum = 0
+	local nonlevel = "未滿"..RaidLeveltoCheck.."級: "
+	local tempnonlevel
+	for i = 1,GetNumGroupMembers() do
+		if UnitLevel("raid"..i) < RaidLeveltoCheck then
+			nonlevelnum = nonlevelnum +1
+			tempnonlevel = nonlevel..UnitName("raid"..i).."("..UnitLevel("raid"..i)..") "
+			if (strlen(tempnonlevel) > MaxCharacterLength)  then
+				SendChatMessage(nonlevelnum,"raid")
+				nonlevel = "未滿"..RaidLeveltoCheck.."級: "..UnitName("raid"..i).."("..UnitLevel("raid"..i)..")."
+			else
+				nonlevel = tempnonlevel
+			end
+		end 
+	end
+	if (nonlevelnum == 0) then
+		SendChatMessage("等級檢查：全員均已達到"..RaidLeveltoCheck.."級!","raid")
+	else
+		SendChatMessage(nonlevel.." [共"..nonlevelnum.."人]","raid")
 	end
 end
 
@@ -104,25 +148,31 @@ local function Help()
 	print("/lk gaes: Get Arena Enemies' Specializations.");
 end
 
-SLASH_LINKER1, SLASH_LINKER2 = '/linker','/lk';
+SLASH_LINKER1, SLASH_LINKER2 = '/linker','/lk'
 local function handler(msg, editbox)
-	local command, rest = msg:match("^(%S*)%s*(.-)$");
+	local command, rest = msg:match("^(%S*)%s*(.-)$")
 	if command == "i" and rest ~= "" then
-		LinkItem(tonumber(rest));
+		LinkItem(tonumber(rest))
 	elseif command == "s" and rest ~= "" then
-		LinkSpell(tonumber(rest));
+		LinkSpell(tonumber(rest))
 	elseif command =="n" and rest == "" then
-		GetNPC();
+		GetNPC()
 	elseif command == "gaes" and rest =="" then
-		GetArenaEnemySpec();
+		GetArenaEnemySpec()
 	elseif command == "rc" then
 		if rest == "" then
-			RaidCheck();
+			RaidCheck()
 		else 
-			RaidCheck(tonumber(rest));
+			RaidCheck(tonumber(rest))
+		end
+	elseif command == "lc" then
+		if rest == "" then 
+			LevelCheck()
+		else
+			LevelCheck(tonumber(rest))
 		end
 	else
-		Help();
+		Help()
 	end
 end
 SlashCmdList["LINKER"] = handler;
