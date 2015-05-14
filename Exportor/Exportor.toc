@@ -1,0 +1,7 @@
+## Interface: 60200
+## Title:|cff69ccf0Exportor|r
+## Notes:Exportor
+## Author: Makazeu
+## Version: 1.0
+## SavedVariables: Wowdb
+Exportor.lua

@@ -1,6 +1,0 @@
-## Interface: 60100
-## Title: NoRaidAlerter
-## Notes: 屏蔽掉RaidAlerter插件那煩人的團隊通(shua)報(ping)
-## Author: Makazeu
-## Version: 1.0
-NoRaidAlerter.lua

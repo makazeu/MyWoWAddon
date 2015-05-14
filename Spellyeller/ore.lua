@@ -48,7 +48,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
 		end
 		if  type == "SPELL_CAST_SUCCESS"  then
 			spellId, spellName, spellSchool = select(12, ...)
-			if GetSpellInfo(spellId) == GetSpellInfo(oreid) and time()-noirtime >2 then
+			if GetSpellInfo(spellId) == GetSpellInfo(oreid) and time()-noirtime >1 then
 				noirtime = time()
 				spellLink = GetSpellLink(spellId)
 				SendChatMessage("【".. ( oreorder - 1 ) % orenumber + 1 .."断】失败！ "..spellLink.."没人打断！",channel)

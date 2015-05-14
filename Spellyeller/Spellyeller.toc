@@ -1,8 +1,9 @@
-## Interface: 60100
+﻿## Interface: 60100
 ## Title:Spellyeller
-## Notes:WoW Spell Yeller 
+## Notes: 一款暂无用户界面的多功能法术通报插件
 ## Author: Makazeu
-## Version: 2.0.0
+## Version: 3.0
+## SavedVariables: syswitches
 ## SavedVariablesPerCharacter: RaidCDList, RaidCDNumber
 Spellyeller.lua
 ore.lua

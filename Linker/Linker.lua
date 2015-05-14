@@ -1,6 +1,6 @@
 --WoW In-game Item Linker
 --Makazeu@gmail.com
---Verison: 2.2.0
+--Verison: 2.3.0
 
 local RareName = {
 	["现世边界"] = true,
@@ -16,7 +16,17 @@ Edge:SetScript("OnUpdate", function()
 end)
 
 local MaxCharacterLength = 250
-function LinkItem(ItemID) 
+
+local function Myprint( str, flag )
+	flag = flag and flag or 0
+	if flag == 0 then
+		print(str)
+	elseif flag == 1 then 
+		SendChatMessage( str , "raid")
+	end
+end
+
+local function LinkItem(ItemID) 
 	local iName, iLink = GetItemInfo(ItemID);
 	if not iLink then
 		print("Item "..ItemID..": 未緩存或不存在！");
@@ -42,6 +52,48 @@ local function GetNPC()
 		print(name.." : "..npcid.." ("..type..")");
 	else 
 		print(name.." is just a player.");
+	end
+end
+
+local function GetRealm(flag)
+	if not IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and not IsInRaid() then 
+		print("你不在一個團隊中!") return 
+	end
+	Myprint("各服務器人數：", flag)
+	flag = flag and flag or 0
+	local PlayerRealm = GetRealmName()
+	local Curname, Currealm, Curpos
+	local Realms = {}
+	local GroupNumber = GetNumGroupMembers()
+	for i = 1, GroupNumber  do 
+		Curname = GetUnitName("raid"..i, true)
+		Curpos = strfind(Curname, "-")
+		Currealm = Curpos and strsub(Curname,Curpos+1) or PlayerRealm
+		Realms[Currealm] = Realms[Currealm] and Realms[Currealm] +1 or 1
+	end
+	local nowstring,nextstring
+	local  Currealmnumber 
+	local RestNumber = GroupNumber
+	for i=1,GroupNumber do
+		if RestNumber == 0 then break end
+		Currealmnumber = 0
+		nowstring = "【"..i.."人】"
+		for k,v in pairs(Realms) do
+			if i == v then
+				Currealmnumber = Currealmnumber + 1
+				RestNumber = RestNumber - 1
+				nextstring = nowstring..k.."."
+				if strlen(nextstring) > MaxCharacterLength then
+					Myprint(nowstring, flag)
+					nowstring = "【"..i.."人】"..k.."."
+				else
+					nowstring = nextstring
+				end
+			end
+		end
+		if Currealmnumber > 0 then
+			Myprint(nowstring, flag)
+		end
 	end
 end
 
@@ -171,6 +223,8 @@ local function handler(msg, editbox)
 		else
 			LevelCheck(tonumber(rest))
 		end
+	elseif command == "realm" then
+		GetRealm(tonumber(rest))
 	else
 		Help()
 	end

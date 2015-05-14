@@ -2,7 +2,7 @@
 ## Title: Mobspell
 ## Notes: Mob Spell Record
 ## Author: Makazeu
-## Version: 1.2
+## Version: 3.0.0
 ## SavedVariables: spelldb
 Mobspell.lua
 Blacklist.lua
