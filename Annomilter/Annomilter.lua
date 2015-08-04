@@ -2,7 +2,7 @@
 WoW Addon
 Name: Annomilter
 Description: Annoying Message Filter
-Version: 2.4(20150514) 
+Version: 2.4(20150517) 
 Author: Makazeu
 ]]
 print("|cffff7d0aAnnomilter|r v2.4 已經載入!")
@@ -11,13 +11,15 @@ local msglen
 local myvalue
 local star = "**"
 local filtertime = 0
+local kaetime
 local lastfilmess
 local lastfiltime
 local Raidwords = {
 	["EUI:"] = true,
 	["任务进度提示"] = true,
 	["(任务完成)"] = true,
-	["大脚团队提示"] = true,
+	["大脚...队提示"] = true,
+	["<没有目标>"] = true,
 }
 local Namewords = {
 	["淘寶"]  = true,
@@ -28,6 +30,8 @@ local Namewords = {
 	["大锤"] = true,
 	["小羊"] = true,
 	["皇冠"] = true,
+	["网代"] = true,
+	["門票"] = true,
 }
 local BannedName = { }
 local Strreplace = {
@@ -36,27 +40,41 @@ local Strreplace = {
 	["│"] = "",
 	["{rt%d}"] = "",
 	["{...}"] = "",
+	["{......}"] = "",
+	["{.........}"] = "",
 	["‖"] = "",
 	["~"] = "",
 	["%."]="",
 	["·"] ="",
+	["丶"] = "",
 }
 
 local WordValue = {
 	["低价处理"] = 40,
 	["大卡"] = 20,
+	["小卡"] = 20,
+	["出%d%dWG"] = 30,
+	["%d%dWG"] = 60,
+	["十万G"] = 80,
+	["打包"] = 40,
+	["%dw=%d"] = 60,
 	["%d元"] = 40,
+	[".块钱"] = 60,
 	["%d0000g"] = 40,
+	["H...只%d"] = 100,
 	["货到付款"] = 50,
 	["诚心要的"] = 50,
 	["急甩"] = 40,
 	["%d/位"] = 80,
+	["%d一位"] = 80,
 	["需%d元"] = 40,
 	["=%d元"] = 50,
-	["%d-100"] = 60,
+	["%d-100="] = 40,
+	["%d-100级="] = 80,
 	["全通"] = 50,
-	["打手"] = 60,
+	["打手"] = 50,
 	["老板"]  = 50,
+	["彳正"] = 100,
 	["代练"] = 80,
 	["包毕业"] = 90,
 	["记者"] = 40,
@@ -65,24 +83,38 @@ local WordValue = {
 	["优惠"] = 40,
 	["散拍"] = 90,
 	["散卖"] = 80,
+	["%d%d0000"] = 40,
 	["下单秒"] = 90,
 	["价格最"] = 40,
 	[".天完成"] = 50,
 	["=%d小时"] = 40,
+	["...G的朋友"] = 100,
 	["躺尸"] = 60,
-	["消费"] = 50,
+	["躺着赢"] = 60,
+	["躺赢"] = 60,
+	["包过"] = 40,
+	["包過"] = 60,
+	["包赢"] = 50,
+	["保赢"] = 50,
+	["随便来"] = 20, 
+	["跟打"] = 60,
+	["消费"] = 40,
 	["打工"] = 40,
 	["支持老"] = 80,
 	["自己上号"] = 80,
 	["门票"] = 100,
 	["門票"] = 100,
 	["雪人"] = 40,
+	["换化"] = 40,
+	["樰人"] = 100,
 	["化武器"] = 40,
 	["帮您做"] = 50,
 	["帮你打"] = 50,
-	["大神带你"] = 70,
+	["大神带"] = 70,
+	["大神戴"] = 70,
 	["%d分钟一波"] = 80,
 	["手工"] = 80,
+	["手工G"] = 90,
 	["店铺"] = 90,
 	["TB"] = 70,
 	["淘宝"]=100,
@@ -91,32 +123,58 @@ local WordValue = {
 	["皇冠"]=50,
 	["淘寶"] =100,
 	["陶宝"] = 100,
-	["宝搜"] = 50,
+	["X宝"] = 50,
+	["宝搜"] = 80,
 	["寶"] = 30,
 	["寳"] = 30,
 	["淘%s宝"] = 100,
+	["ZFB"] = 70,
+	["支付宝"] = 100,
+	["比例1."] = 50,
 	["...万G"] = 70,
 	["需要请加"] = 80,
 	["%d萬"] = 90,
-	["MMMMM"] = 30,  
-	["黑手的熔炉"] = 30,
+	["MMMMM"] = 20,  
+	["黒"] = 100,
+	["H嘿"] = 100,
+	["%d筷"] = 100,
 	["原祖角斗士"] = 30,
 	["引领潮流"] = 40,
+	["千钧一发"] = 40,
 	["接全职业"] = 100,
 	["踏血小戈隆"] = 40,
 	["灵爪飞鹰"] = 40,
+	["特惠%d"] = 100,
 	["德拉诺团队的荣耀"] = 40,
 	["挑战德拉诺"] = 60,
 	["%d点征服点数"] = 40,
-	["挣服点"] = 100,
+	["混...服点"] = 80,
+	["[100级]"] = 30,
+	["大{圆形}"] = 50,
+	["小{圆形}"] = 50,
+	["①"] = 50,
 	["⑥"] = 60,
+	["⒌"] = 50,
+	["⑤"] = 50,
+	["⒐"] = 50,
+	["⑨"] = 50,
+	["上丫"] = 60,
+	["丫丫"] = 60,
+	["还有%d坑"] = 20,
+	["跨服......G团"] = 30,
+	["视频...聊"] = 100,
+	["吖吖"] = 100,
+	["《6.》"] = 100,
+	["%d人民币"] = 100,
 }
 
 local function MessageCounter(thismess,thisauthor,filstyle)
 	if lastfilmess and lastfilmess == thismess and time()-lastfiltime <= 1 then
 		return
 	end
-	BannedName[thisauthor] = true
+	if filstyle ~= "Underline" then
+		BannedName[thisauthor] = true
+	end
 	filtertime = filtertime + 1
 	lastfiltime = time()
 	lastfilmess = thismess
@@ -146,8 +204,12 @@ local function MessageFilter( NFself, NFevent, NFmsg, NFauthor, ... )
 		end
 	end
 	--Delete given characters
+	kaetime = 0
 	for k,v in pairs(Strreplace) do
-		NFmsg = string.gsub(NFmsg, k, v)
+		NFmsg, kaetimenow = string.gsub(NFmsg, k, v)
+		if strsub(k,1,1) == "{" then
+			kaetime = kaetime + kaetimenow
+		end
 	end
 
 	if NFmsg=="_" or NFmsg =="-" then
@@ -155,7 +217,7 @@ local function MessageFilter( NFself, NFevent, NFmsg, NFauthor, ... )
 		return true
 	end
 	--Filter by  keywords
-	myvalue = 0
+	myvalue = kaetime * 20
 	for k,v in pairs(WordValue) do
 		if strfind(NFmsg,k) then
 			myvalue = myvalue + v

@@ -1,4 +1,4 @@
-﻿## Interface: 60100
+﻿## Interface: 60200
 ## Title:Spellyeller
 ## Notes: 一款暂无用户界面的多功能法术通报插件
 ## Author: Makazeu
@@ -6,4 +6,3 @@
 ## SavedVariables: syswitches
 ## SavedVariablesPerCharacter: RaidCDList, RaidCDNumber
 Spellyeller.lua
-ore.lua

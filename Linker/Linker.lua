@@ -1,6 +1,6 @@
---WoW In-game Item Linker
+﻿--WoW In-game Item Linker
 --Makazeu@gmail.com
---Verison: 2.3.0
+--Verison: 2.5.0
 
 local RareName = {
 	["现世边界"] = true,
@@ -27,7 +27,7 @@ local function Myprint( str, flag )
 end
 
 local function LinkItem(ItemID) 
-	local iName, iLink = GetItemInfo(ItemID);
+	local iName, iLink = GetItemInfo(ItemID)
 	if not iLink then
 		print("Item "..ItemID..": 未緩存或不存在！");
 	else
@@ -44,6 +44,54 @@ local function LinkSpell(SpellID)
 	end
 end
 
+local function PutEditBox( str )
+	local editbox = _G.ChatEdit_ChooseBoxForSend() 
+	_G.ChatEdit_ActivateChat(editbox)
+	
+	editbox:SetText(str)
+	editbox:HighlightText()
+		
+	editBox = CreateFrame("EditBox","CopyChatFrameEditBox",UIParent)
+	editBox:SetMultiLine(true)
+	editBox:SetMaxLetters(99999)
+	editBox:EnableMouse(true)
+	editBox:SetAutoFocus(false)
+	editBox:SetFontObject(ChatFontNormal)
+	editBox:Width(scrollArea:GetWidth())
+	editBox:Height(200)
+	editBox:SetScript("OnEscapePressed", function() frame:Hide() end)
+end
+
+local function MyEditBox( str )
+	local editbox = _G.ChatEdit_ChooseBoxForSend() 
+	_G.ChatEdit_ActivateChat(editbox)
+	editbox:Insert(str)
+	--editbox:HighlightText()
+end
+
+function GetItemDescription( )
+	local name = GameTooltipTextLeft1:GetText()
+	local str = GameTooltipTextLeft2:GetText()
+	if not str or not strfind(str,"使用：") then str = GameTooltipTextLeft3:GetText() end
+	if not str or not strfind(str,"使用：") then str = GameTooltipTextLeft4:GetText() end
+	if not str or not strfind(str,"使用：") then print("找不到该物品的使用效果!") return end
+	str = strsub(name,strfind(name,"|t")+3).."  -  "..strsub(str,11)
+	print(str)
+	MyEditBox(str)
+end
+
+local function SpellDescription( SpellID )
+	local desc = GetSpellDescription(SpellID)
+	local sInfo = GetSpellInfo(SpellID)
+	if not sInfo then
+		print("Spell "..SpellID..": 該法術不存在！");
+	else
+		print("Spell "..SpellID.." : \124cffffd000\124Hspell:"..SpellID.."\124h["..sInfo.."]\124h\124r  -  "..desc);
+		if desc =="" then desc = "没有描述!" end
+		PutEditBox(sInfo.." : "..desc)
+	end
+end
+
 local function GetNPC()
 	local guid , name = UnitGUID("target"), UnitName("target");
 	if guid == nil then print("請選擇目標！"); return; end	
@@ -53,6 +101,14 @@ local function GetNPC()
 	else 
 		print(name.." is just a player.");
 	end
+end
+
+local function GetPosition( ... )
+	SetMapToCurrentZone() 
+	local x,y=GetPlayerMapPosition("player")
+	str = format("%s, %s: %.1f, %.1f",GetZoneText(),GetSubZoneText(),x*100,y*100)
+	print(str)
+	PutEditBox(str)
 end
 
 local function GetRealm(flag)
@@ -194,10 +250,8 @@ local function LevelCheck( RaidLevel )
 end
 
 local function Help()
-	print("|cffffd200Linker|r v1.1 by |cFFBF00FFMakazeu|r");
-	print("語法: 鏈接物品|法術/lk (i|s) id，獲取NPC id：/lk n");
-	print("/lk rc (num): Raid Check for Flask and Food.");
-	print("/lk gaes: Get Arena Enemies' Specializations.");
+	print("|cffffd200Linker|r v2.4 by |cFFBF00FFMakazeu|r");
+	print("請輸入正確的指令！");
 end
 
 SLASH_LINKER1, SLASH_LINKER2 = '/linker','/lk'
@@ -207,10 +261,14 @@ local function handler(msg, editbox)
 		LinkItem(tonumber(rest))
 	elseif command == "s" and rest ~= "" then
 		LinkSpell(tonumber(rest))
+	elseif command == "sd" and rest~="" then
+		SpellDescription(tonumber(rest))
 	elseif command =="n" and rest == "" then
 		GetNPC()
 	elseif command == "gaes" and rest =="" then
 		GetArenaEnemySpec()
+	elseif command == "p" then
+		GetPosition()
 	elseif command == "rc" then
 		if rest == "" then
 			RaidCheck()

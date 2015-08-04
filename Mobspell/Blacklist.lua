@@ -1,4 +1,4 @@
-MOB_BLACKLIST = {
+﻿MOB_BLACKLIST = {
 	[77894] = true,   -- 沃爾特 - 修理機器人
 	[61245] = true, -- 電能圖騰 - Shaman
 	[60561] = true, -- 陷地圖騰 - Shaman
