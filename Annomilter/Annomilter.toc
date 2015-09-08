@@ -1,4 +1,4 @@
-## Interface: 60200
+## Interface: 60100
 ## Title: Annomilter
 ## Notes: 屏蔽掉某些插件的扰人刷屏和某些不和谐的玩家名
 ## Author: Makazeu

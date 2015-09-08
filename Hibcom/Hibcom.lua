@@ -1,3 +1,31 @@
+--Author: Makazeu
+local function Display( questID, name )
+	if IsQuestFlaggedCompleted(questID) == false then
+			print("|cff69ccf0"..name.."|r |cffff0000未完成|r")
+		else
+			print("|cff69ccf0"..name.."|r |cff00ff00已完成|r")
+	end
+end 
+
+local function Patch62Rares( ... )
+	print("|cFFBF00FF========地狱火之怒========|r")
+	--Uninstanced Hellfire Citadel
+	Display(40107, "邪能监工玛德拉普(HFC)")
+	--The Dark Portal
+	Display(40104, "萨姆逊·强掠(TDP)")
+	Display(40105, "达库姆(TDP)")
+	Display(40106, "贡达(TDP)")
+	--Uninstanced Highmaul
+	Display(40073, "普格(Highmaul)")
+	Display(40074, "甘克(Highmaul)")
+	Display(40075, "鲁克都格(Highmaul)")
+	--Champions of Hellfire Citadel
+	Display(39287, "死爪(Hellbane)")
+	Display(39288, "泰罗菲斯特(Hellbane)")
+	Display(39289, "末日之轮(Hellbane)")
+	Display(39290, "维金斯(Hellbane)")
+end
+
 local function PandariaWeekly( ... )
 	print("=======潘达利亚週常=======")
 	local panwk = {
@@ -21,7 +49,7 @@ local function DraenorWeekly( ... )
 	print("=======德拉諾週常=======")
 	local draenorweek = {
 	Rukhmar  = { id=37464,name="魯克瑪(阿蘭卡峯)"},
-	Tarlna = {id=37462,name="戈爾隆德兩隻首領"},
+	Tarlna = {id=37462,name="戈爾隆德首領"},
 	GoldInvasion = { id = 37640, name = "黃金要塞入侵" },
 	PInvasion = { id = 38482, name = "白金要塞入侵" },
 	}
@@ -57,6 +85,8 @@ local function handler( msg,editbox )
 		PandariaWeekly()
 	elseif command == "dw" then
 		DraenorWeekly()
+	elseif command == "62" then
+		Patch62Rares()
 	elseif command == "q" and rest ~= "" then
 		GetQuest(tonumber(rest))
 	else 

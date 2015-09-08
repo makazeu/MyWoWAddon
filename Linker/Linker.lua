@@ -1,6 +1,6 @@
 ﻿--WoW In-game Item Linker
 --Makazeu@gmail.com
---Verison: 2.5.0
+--Verison: 2.6.0
 
 local RareName = {
 	["现世边界"] = true,
@@ -23,6 +23,8 @@ local function Myprint( str, flag )
 		print(str)
 	elseif flag == 1 then 
 		SendChatMessage( str , "raid")
+	elseif flag == 2 then
+		SendChatMessage(str, "party")
 	end
 end
 
@@ -123,9 +125,11 @@ local function GetRealm(flag)
 	local GroupNumber = GetNumGroupMembers()
 	for i = 1, GroupNumber  do 
 		Curname = GetUnitName("raid"..i, true)
-		Curpos = strfind(Curname, "-")
-		Currealm = Curpos and strsub(Curname,Curpos+1) or PlayerRealm
-		Realms[Currealm] = Realms[Currealm] and Realms[Currealm] +1 or 1
+		if Curname ~= "未知目标" then
+			Curpos = strfind(Curname, "-")
+			Currealm = Curpos and strsub(Curname,Curpos+1) or PlayerRealm
+			Realms[Currealm] = Realms[Currealm] and Realms[Currealm] +1 or 1
+		end
 	end
 	local nowstring,nextstring
 	local  Currealmnumber 

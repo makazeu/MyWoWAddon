@@ -2,6 +2,6 @@
 ## Title:|cff69ccf0Link|rer
 ## Notes:Link items or spells
 ## Author: Makazeu
-## Version: 1.1
+## Version: 2.6.0
 Linker.lua
 
