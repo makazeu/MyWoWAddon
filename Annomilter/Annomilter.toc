@@ -1,7 +1,7 @@
-## Interface: 60100
+## Interface: 60200
 ## Title: Annomilter
 ## Notes: 屏蔽掉某些插件的扰人刷屏和某些不和谐的玩家名
 ## Author: Makazeu
-## Version: 1.3
+## Version: 2.4
 ## SavedVariables: Gomirec
 Annomilter.lua

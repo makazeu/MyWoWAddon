@@ -1,4 +1,4 @@
---[[
+﻿--[[
 Script: WoW Spell Yeller
 Author : Makazeu
 Version: 3.1.1
@@ -46,6 +46,9 @@ local ImportantAbility = {
 	--[172106] = true, -- 靈狐守護 Hunter
 	--[106898] = true, -- 奔竄咆哮 Druid
 	--[77764] = true, -- 狂奔怒吼 Druid
+	[187615] = true, -- 敏捷橙戒
+	[187611] = true, -- 智力橙戒
+	[187614] = true, -- 力量橙戒
 }
 local PersonalAbility = {
 	[102342] = true, -- 鐵樹皮術 
