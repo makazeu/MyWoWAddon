@@ -46,9 +46,10 @@ local ImportantAbility = {
 	--[172106] = true, -- 靈狐守護 Hunter
 	--[106898] = true, -- 奔竄咆哮 Druid
 	--[77764] = true, -- 狂奔怒吼 Druid
-	[187615] = true, -- 敏捷橙戒
-	[187611] = true, -- 智力橙戒
-	[187614] = true, -- 力量橙戒
+	-- Warlords Legendary Ring Procs
+	[187615] = true, -- Maalus	  (Agi L.Ring)
+	[187611] = true, -- Nithramus (Int L.Ring)
+	[187614] = true, -- Thorasus  (Str L.Ring)
 }
 local PersonalAbility = {
 	[102342] = true, -- 鐵樹皮術 
