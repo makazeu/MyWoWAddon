@@ -1,0 +1,8 @@
+## Interface: 70000
+## Title: Mobspell
+## Notes: Mob Spell Recorder
+## Author: Makazeu
+## Version: 7.0
+## SavedVariables: spelldb
+Mobspell.lua
+Blacklist.lua
