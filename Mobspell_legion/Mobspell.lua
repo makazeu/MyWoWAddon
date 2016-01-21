@@ -32,7 +32,8 @@ local EventTypes = {
 	SPELL_PERIODIC_HEAL = true,
 } 
 local UnknownObjectLocale = {
-	未知目标 = true,
+	["未知目标"] = true,
+	["Unknown"] = true,
 }
 
 local StarterFrame = CreateFrame("Frame")
@@ -66,13 +67,14 @@ frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 frame:SetScript("OnEvent", function(self, event, ...)
 	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
 		--_, eventtype, _, sourceGUID, sourceName = ...
-		_, eventtype, sourceGUID, sourceName = ...
+		_, eventtype, _, sourceGUID, sourceName = ...
+		--print(sourceGUID.." "..sourceName)
 		if  EventTypes[eventtype] then
 			sourcetype, _, _, _, _, sourceid, _ = strsplit("-", sourceGUID)
 			sourceid = tonumber(sourceid)
 			mapName = GetRealZoneText()
-			--spellid, _, spellschool = select(12, ...)
-			spellid, _, spellschool = select(10, ...)
+			spellid, _, spellschool = select(12, ...)
+			--print(sourcetype.." "..sourceid.." "..spellid.." "..spellnamet)
 			if sourcetype~="Player" and sourcetype ~="Pet" and sourceid and mapName then
 				if spelldb[mapName] and spelldb[mapName][sourceid] and spelldb[mapName][sourceid].spell[spellid] then
 					--if sourceName]~= "未知目标" then
