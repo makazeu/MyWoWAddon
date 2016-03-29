@@ -1,8 +1,9 @@
 ## Interface: 60200
 ## Title: Mobspell
-## Notes: Mob Spell Record
+## Notes: Mob Spell Recorder
 ## Author: Makazeu
 ## Version: 3.0.0
 ## SavedVariables: spelldb
 Mobspell.lua
 Blacklist.lua
+

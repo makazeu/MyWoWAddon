@@ -8,9 +8,9 @@ Author: Makazeu@gmail.com
 local eventtype, sourceGUID, sourceName, spellid, spellschool, sourcetype, sourceid
 local mapName, channel, spellchar, tempchar, spellinfo, spellcolor
 local MaxCharacterLength = 250
-local colorcodes = {[1] = "FFFF00", [2] = "FFE680", [4] = "FF8000", 
+local colorcodes = {[1] = "FFFF00", [2] = "FFE680", [4] = "FF8000",
 [8] = "4DFF4D", [16] = "80FFFF",[32] = "8080FF",[64] = "FF80FF", }
---local EventTypes = {["SPELL_CAST_START"] = true, 
+--local EventTypes = {["SPELL_CAST_START"] = true,
 --["SPELL_CAST_SUCCESS"] = true, ["SPELL_AURA_APPLIED"] = true, }
 
 local EventTypes = {
@@ -35,17 +35,17 @@ local StarterFrame = CreateFrame("Frame")
 StarterFrame:RegisterEvent("ADDON_LOADED")
 StarterFrame:SetScript("OnEvent", function(self, event, arg1)
 	if event == "ADDON_LOADED" and arg1 == "Mobspell" then
-		if spelldb == nil then 
+		if spelldb == nil then
 			spelldb = {}
 		end
 		print("|cFFFF8000Mobspell is loaded!|r")
 	end
 end)
 
-local function GetSpellColored(spellname, spellschool) 
-	if not colorcodes[spellschool] then 
+local function GetSpellColored(spellname, spellschool)
+	if not colorcodes[spellschool] then
 		return spellname
-	else 
+	else
 		return "|cFF"..colorcodes[spellschool]..spellname.."|r"
 	end
 end
@@ -73,12 +73,12 @@ frame:SetScript("OnEvent", function(self, event, ...)
 						spelldb[mapName][sourceid].name = sourceName
 					end
 				elseif not SPELL_BLACKLIST[spellid] and not MOB_BLACKLIST[sourceid] and not SPELL_BANNED[spellid] then
-					if not spelldb[mapName] then spelldb[mapName] = {} end			
-					if not spelldb[mapName][sourceid] then 
+					if not spelldb[mapName] then spelldb[mapName] = {} end
+					if not spelldb[mapName][sourceid] then
 						spelldb[mapName][sourceid] = { name = sourceName }
 						spelldb[mapName][sourceid].spell = { [spellid] = spellschool }
 					else
-						spelldb[mapName][sourceid].spell[spellid] = spellschool						
+						spelldb[mapName][sourceid].spell[spellid] = spellschool
 					end
 				end
 			end
@@ -86,7 +86,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
 	end
 end)
 
-local script = GameTooltip:GetScript("OnTooltipSetUnit") 
+local script = GameTooltip:GetScript("OnTooltipSetUnit")
 local function HookedOnTooltipSetUnit( frame, ... )
 	if script and type(script) == "function" then
 		script(frame, ...)
@@ -97,7 +97,7 @@ local function HookedOnTooltipSetUnit( frame, ... )
 		local type, _, _, _, _, npcid, _ = strsplit("-",guid)
 		npcid = tonumber(npcid)
 		mapName = GetRealZoneText()
-		if type == "Player" or type == "Pet" or not npcid or not mapName or 
+		if type == "Player" or type == "Pet" or not npcid or not mapName or
 			not spelldb[mapName] or not spelldb[mapName][npcid]  then return end
 		spellchar = ""
 		for k,v in pairs(spelldb[mapName][npcid].spell) do
@@ -110,7 +110,7 @@ local function HookedOnTooltipSetUnit( frame, ... )
 		frame:AddLine("法術:"..spellchar, 1, 1, 1, true)
 	end
 end
-GameTooltip:SetScript("OnTooltipSetUnit", HookedOnTooltipSetUnit)  
+GameTooltip:SetScript("OnTooltipSetUnit", HookedOnTooltipSetUnit)
 
 SLASH_MOBSPELL1, SLASH_MOBSPELL2 = "/mobspell", "/ms"
 local function handler( msg, editbox )
@@ -121,7 +121,7 @@ local function handler( msg, editbox )
 			for j,jv in pairs(iv) do
 				if MOB_BLACKLIST[j] then
 					print(jv.name.." in "..i.." has been removed.")
-					spelldb[i][j] = nil 
+					spelldb[i][j] = nil
 				end
 				if spelldb[i][j] then
 					for k, kv in  pairs(jv.spell) do
@@ -155,9 +155,9 @@ local function handler( msg, editbox )
 					if GetSpellInfo(k) and strfind(GetSpellInfo(k),rest) then
 						print("|cFFFF8000"..jv.name.."|r("..j..")@|cFF8080FF"..i.."|r - "..MySpellLinker(k,kv))
 						resultnum = resultnum +1
-						if resultnum > maxresultnum then 
+						if resultnum > maxresultnum then
 							print("查詢結果已到達"..maxresultnum.."條之上限！")
-							return 
+							return
 						end
 					end
 				end
@@ -173,7 +173,7 @@ local function handler( msg, editbox )
 		if guid == nil then return end
 		type, _, _, _, _, npcid, _ = strsplit("-",guid)
 		npcid = tonumber(npcid)
-		if type == "Player" or type == "Pet"  or not npcid or 
+		if type == "Player" or type == "Pet"  or not npcid or
 		not spelldb[mapName][npcid] then return end
 	else
 		npcid = tonumber(rest)
@@ -184,7 +184,7 @@ local function handler( msg, editbox )
 		spellchar = ""
 		for k,v in pairs(spelldb[mapName][npcid].spell) do
 			spellchar = spellchar.." "..MySpellLinker(k,v)
-		end	
+		end
 		print(name.." casts:"..spellchar)
 	elseif command == "report"  then
 		spellchar = name.." casts:"
